@@ -1,0 +1,35 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="Read attached LICENSE.md"
+issueTrackerURL="https://github.com/MaxBogomol/EquippedToThePaws/issues"
+
+[[mods]]
+    modId="equipped_to_the_paws"
+    version="${file.jarVersion}"
+    displayName="Equipped to the Paws"
+    updateJSONURL = "https://raw.githubusercontent.com/MaxBogomol/EquippedToThePaws/refs/heads/master/update.json"
+    displayURL = "https://fluffy-village.dev"
+    logoFile="equipped_to_the_paws.png"
+    authors="MaxBogomol"
+    description="Adds ??? things"
+
+[[dependencies.equipped_to_the_paws]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.equipped_to_the_paws]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.equipped_to_the_paws]]
+    modId = "fluffy_fur"
+    mandatory = true
+    versionRange = "[1.20.1-0.3,)"
+    ordering = "AFTER"
+    side = "BOTH"

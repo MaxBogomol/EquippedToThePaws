@@ -1,0 +1,140 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        maven { url = 'https://maven.parchmentmc.org' }
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.0.+', changing: true
+        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
+        classpath 'org.parchmentmc:librarian:1.+'
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '[0.7,0.8)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'java-library'
+}
+
+repositories {
+    mavenLocal()
+    maven { url = "https://cursemaven.com" }
+    maven { url = "https://maven.theillusivec4.top/" }
+    maven { url = "https://maven.blamejared.com" }
+}
+
+version = "${minecraft_version}-${mod_version}"
+group = 'mod.maxbogomol.equipped_to_the_paws'
+archivesBaseName = 'equipped_to_the_paws'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
+
+minecraft {
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+    copyIdeResources = true
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            jvmArg "-Dmixin.env.disableRefMap=true"
+            mods { equipped_to_the_paws { source sourceSets.main } }
+        }
+
+        client {
+            args "--username", "Dev"
+            property 'forge.enabledGameTestNamespaces', "equipped_to_the_paws"
+        }
+
+        server {
+            property 'forge.enabledGameTestNamespaces', "equipped_to_the_paws"
+            args '--nogui'
+        }
+
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', "equipped_to_the_paws"
+        }
+
+        data {
+            workingDirectory project.file('run-data')
+            args '--mod', 'equipped_to_the_paws', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    implementation fg.deobf("mod.maxbogomol.fluffy_fur:fluffy_fur:${minecraft_version}-${fluffy_fur_version}")
+
+    implementation fg.deobf("top.theillusivec4.curios:curios-forge:${curios_version}+${minecraft_version}")
+    implementation fg.deobf("mezz.jei:jei-1.20.1-forge:${jei_version}")
+    implementation fg.deobf("curse.maven:jade-324717:${jade_version}")
+
+    runtimeOnly fg.deobf("curse.maven:embeddium-908741:${embeddium_version}")
+    runtimeOnly fg.deobf("curse.maven:oculus-581495:${oculus_version}")
+    runtimeOnly fg.deobf("curse.maven:fusion-connected-textures-854949:${fusion_version}")
+    runtimeOnly fg.deobf("curse.maven:athena-841890:${athena_version}")
+    runtimeOnly fg.deobf("curse.maven:configured-457570:${configured_version}")
+    runtimeOnly fg.deobf("curse.maven:model-gap-fix-676136:${model_gap_fix_version}")
+    runtimeOnly fg.deobf("curse.maven:free-cam-557076:${free_cam_version}")
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "equipped_to_the_paws",
+            "Specification-Vendor": "MaxBogomol",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor" :"MaxBogomol",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+
+    from("LICENSE.md")
+    from("ASSETS.md")
+    from("CREDITS.md")
+}
+
+jar.finalizedBy('reobfJar')
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = archivesBaseName
+
+            from components.java
+            fg.component(it)
+            jarJar.component(it)
+        }
+    }
+}
+
+mixin {
+    add sourceSets.main, "equipped_to_the_paws.refmap.json"
+    config 'equipped_to_the_paws.mixins.json'
+    dumpTargetOnFailure true
+}
